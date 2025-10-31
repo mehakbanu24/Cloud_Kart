@@ -1,0 +1,45 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Products</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+</head>
+<body>
+  <div class="hero">
+    <div class="hero-inner">
+      <h1>Product Catalog</h1>
+      <p class="subtitle">Browse items • Modern UI • Demo store</p>
+      <div class="hero-actions">
+        <a class="btn primary" th:href="@{/products/new}">+ Add Product</a>
+        <form th:action="@{/products}" method="get" class="search-form">
+          <input name="q" type="search" th:value="${q}" placeholder="Search products..." />
+          <button class="btn">Search</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <main class="container-grid">
+    <div class="cards">
+      <div th:each="p : ${products}" class="card">
+        <div class="card-image">
+          <img th:src="${p.imageUrl != null ? p.imageUrl : '/images/placeholder.png'}" alt="" />
+        </div>
+        <div class="card-body">
+          <h3 th:text="${p.name}">Product Name</h3>
+          <p class="muted" th:text="${#strings.abbreviate(p.description, 100)}">Short description...</p>
+          <div class="card-footer">
+            <div class="price" th:text="${p.price}">₹0.00</div>
+            <div class="actions">
+              <a th:href="@{|/products/${p.id}|}" class="btn">View</a>
+              <a th:href="@{|/products/delete/${p.id}|}" class="btn danger small">Delete</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

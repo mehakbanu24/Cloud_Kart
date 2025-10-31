@@ -1,0 +1,39 @@
+package com.example.productservice.model;
+
+import jakarta.persistence.*;
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Data
+@Entity
+@Table(name = "products")
+public class Product {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @Column(nullable = false)
+  private String name;
+
+  @Column(length = 1000)
+  private String description;
+
+  @Column(nullable = false)
+  private BigDecimal price;
+
+  private Integer stock = 0;
+
+  // ✅ Fix: increase length to store long URLs
+  @Column(length = 2000)
+  private String imageUrl;
+
+  private LocalDateTime createdAt;
+
+  @PrePersist
+  public void prePersist() {
+    createdAt = LocalDateTime.now();
+  }
+}

@@ -1,0 +1,65 @@
+package com.example.productservice.controller;
+
+import com.example.productservice.model.Product;
+import com.example.productservice.service.ProductService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/products")
+public class ProductRestController {
+
+  private final ProductService service;
+
+  public ProductRestController(ProductService service) { this.service = service; }
+
+  @GetMapping
+  public List<Product> all(@RequestParam(value = "q", required = false) String q) {
+    if (q != null && !q.isBlank()) return service.searchByName(q);
+    return service.findAll();
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<Product> get(@PathVariable Long id) {
+    return service.findById(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
+  @PostMapping
+  public ResponseEntity<Product> create(@RequestBody Product p) {
+    return ResponseEntity.ok(service.save(p));
+  }
+
+  // new: decrease stock safely
+  @PutMapping("/reduceStock/{id}/{quantity}")
+  public ResponseEntity<String> reduceStock(@PathVariable Long id, @PathVariable int quantity) {
+    return service.findById(id).map(product -> {
+      if (product.getStock() == null) product.setStock(0);
+      if (product.getStock() < quantity) {
+        return ResponseEntity.badRequest().body("Not enough stock");
+      }
+      product.setStock(product.getStock() - quantity);
+      service.save(product);
+      return ResponseEntity.ok("Stock updated");
+    }).orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody Product p) {
+    return service.findById(id).map(existing -> {
+      existing.setName(p.getName());
+      existing.setDescription(p.getDescription());
+      existing.setPrice(p.getPrice());
+      existing.setStock(p.getStock());
+      existing.setImageUrl(p.getImageUrl());
+      return ResponseEntity.ok(service.save(existing));
+    }).orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> delete(@PathVariable Long id) {
+    service.deleteById(id);
+    return ResponseEntity.noContent().build();
+  }
+}
